@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, Text, View, Image } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Image, Alert } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { createUser } from "../../lib/appwrite";
 
 const SignIn = () => {
@@ -15,9 +15,28 @@ const SignIn = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submit = () => {
-    console.log("works");
-    createUser();
+  const submit = async () => {
+    console.log("Form values before submission:", form); // Add this log
+
+    if (form.username === "" || form.password === "" || form.email === "") {
+      Alert.alert("Error", "Please fill in all the fields");
+    }
+    setIsSubmitting(true);
+
+    try {
+      const result = await createUser({
+        email: form.email,
+        password: form.password,
+        username: form.username,
+      });
+      console.log("User creation result:", result); // Add this log
+      router.replace("/home");
+    } catch (error) {
+      console.error("Error during user creation:", error); // Add this log
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -37,7 +56,7 @@ const SignIn = () => {
           <FormField
             title="Username"
             value={form.username}
-            handleChangeText={(e) => setForm({ ...form, email: e })}
+            handleChangeText={(e) => setForm({ ...form, username: e })}
           />
 
           <FormField
